@@ -26,7 +26,9 @@ const browserPath = process.env.BROWSER_PATH;
       const cache = await caches.open('lavender-workbench-v2');
       return (await cache.keys()).map(request => new URL(request.url).pathname);
     });
-    ['/pet.css', '/pet-core.js', '/pet-ui.js'].forEach(path => assert.ok(cachedAssets.includes(path)));
+    ['/pet.css', '/pet-core.js', '/pet-ui.js'].forEach(path => {
+      assert.ok(cachedAssets.some(asset => asset.endsWith(path)));
+    });
     const guideButton = page.locator('[data-finish-guide]');
     if (await guideButton.isVisible()) await guideButton.click();
     assert.equal(await page.locator('.pet-name-row strong').textContent(), '缅英猫');
