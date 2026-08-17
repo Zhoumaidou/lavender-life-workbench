@@ -10,6 +10,7 @@
   <title>薰衣簿 · 生活与成长</title>
   <link rel="apple-touch-icon" href="./icon-192.png">
   <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./pet.css">
   <style>
     :root{--paper:#f6f0e4;--surface:#fffdfa;--ink:#25322e;--muted:#76817d;--teal:#2f7d78;--teal-soft:#d9ebe6;--forest:#38694d;--coral:#f47b5f;--coral-soft:#ffe1d9;--mustard:#d7a92e;--yellow:#f7d86a;--purple:#8877b7;--purple-soft:#e8e2f4;--blue:#7897ac;--blue-soft:#dde8ee;--line:rgba(37,50,46,.09);--shadow:0 8px 24px rgba(55,66,58,.07);--radius:22px}
     *{box-sizing:border-box}html{background:#d9ddd8}body{margin:0;color:var(--ink);background:var(--paper);font-family:"HarmonyOS Sans SC","Microsoft YaHei UI","PingFang SC",sans-serif;letter-spacing:0;-webkit-tap-highlight-color:transparent}button,input,select,textarea{font:inherit;color:inherit;letter-spacing:0}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid rgba(47,125,120,.23);outline-offset:2px}.app{width:min(100%,520px);min-height:100dvh;margin:auto;background:var(--paper);position:relative;overflow-x:hidden;padding-bottom:calc(92px + env(safe-area-inset-bottom))}.page{padding:0 18px 28px}.topbar{padding:calc(18px + env(safe-area-inset-top)) 2px 14px;display:flex;align-items:center;justify-content:space-between}.profile{display:flex;align-items:center;gap:12px}.avatar{width:46px;height:46px;border-radius:16px;background:var(--teal);display:grid;place-items:center;color:white;font-weight:800;box-shadow:0 7px 16px rgba(47,125,120,.25)}.eyebrow{font-size:12px;color:var(--muted);font-weight:700}.greeting{font-size:20px;font-weight:800;margin-top:3px}.icon-btn,.more-btn{border:0;background:var(--surface);width:42px;height:42px;border-radius:15px;display:grid;place-items:center;box-shadow:var(--shadow)}svg.icon{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.section{margin:20px 0}.section-head{display:flex;align-items:end;justify-content:space-between;margin:0 2px 11px}.section-title{font-size:18px;font-weight:850;margin:0}.section-note,.text-btn{font-size:12px;color:var(--muted)}.text-btn{border:0;background:none;color:var(--teal);font-weight:750;padding:4px}.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
@@ -155,5 +156,7 @@ function ipWeather(){fetch('https://ipwho.is/').then(r=>r.json()).then(j=>{if(!j
   };
   render();
 </script>
+<script src="./pet-core.js"></script>
+<script src="./pet-ui.js"></script>
 </body>
 </html>
