@@ -23,15 +23,19 @@ const browserPath = process.env.BROWSER_PATH;
     await page.waitForSelector('.pet-card');
     const cachedAssets = await page.evaluate(async () => {
       await navigator.serviceWorker.ready;
-      const cache = await caches.open('lavender-workbench-v2');
+      const cache = await caches.open('lavender-workbench-v3');
       return (await cache.keys()).map(request => new URL(request.url).pathname);
     });
-    ['/pet.css', '/pet-core.js', '/pet-ui.js'].forEach(path => {
+    ['/pet.css', '/pet-core.js', '/pet-ui.js', '/assets/pets/maine-coon.webp',
+      '/assets/pets/russian-blue.webp', '/assets/pets/rough-collie.webp',
+      '/assets/pets/border-collie.webp'].forEach(path => {
       assert.ok(cachedAssets.some(asset => asset.endsWith(path)));
     });
     const guideButton = page.locator('[data-finish-guide]');
     if (await guideButton.isVisible()) await guideButton.click();
-    assert.equal(await page.locator('.pet-name-row strong').textContent(), '缅英猫');
+    assert.equal(await page.locator('.pet-name-row strong').textContent(), '缅因猫');
+    assert.equal(await page.locator('[data-pet-action]').count(), 3);
+    assert.ok(await page.locator('.pet-photo').evaluate(image => image.complete && image.naturalWidth > 0));
     assert.equal(await page.locator('.pet-stat-grid span').nth(0).locator('b').textContent(), '80');
 
     const openTask = page.locator('[data-toggle-task][aria-label="完成任务"]').first();
@@ -40,10 +44,18 @@ const browserPath = process.env.BROWSER_PATH;
     assert.equal(await page.locator('.pet-stat-grid span').nth(0).locator('b').textContent(), '85');
     assert.match(await page.locator('.pet-coins').textContent(), /3/);
 
-    for (let index = 0; index < 4; index += 1) {
-      await page.locator('[data-pet-click]').click();
-      await page.waitForTimeout(320);
-    }
+    await page.locator('[data-pet-action="head"]').click();
+    await page.waitForTimeout(320);
+    assert.match(await page.locator('.pet-speech').textContent(), /摸到耳朵边/);
+    assert.ok(await page.locator('.pet-avatar').evaluate(element => element.classList.contains('action-head')));
+    await page.locator('[data-pet-action="belly"]').click();
+    await page.waitForTimeout(320);
+    assert.match(await page.locator('.pet-speech').textContent(), /肚皮只给你摸一下/);
+    await page.locator('[data-pet-action="paw"]').click();
+    await page.waitForTimeout(320);
+    assert.match(await page.locator('.pet-speech').textContent(), /软软的小爪/);
+    await page.locator('[data-pet-action="head"]').click();
+    await page.waitForTimeout(320);
     assert.match(await page.locator('#toastRoot').textContent(), /今天已经摸过三次/);
 
     await page.locator('[data-pet-open]').click();
@@ -51,6 +63,7 @@ const browserPath = process.env.BROWSER_PATH;
     assert.equal(await page.locator('.pet-species .active').textContent(), '边牧');
     await page.locator('[data-close]').click();
     assert.equal(await page.locator('.pet-name-row strong').textContent(), '边牧');
+    assert.match(await page.locator('.pet-photo').getAttribute('src'), /border-collie\.webp$/);
 
     await page.reload({ waitUntil: 'networkidle' });
     await page.waitForSelector('.pet-card');

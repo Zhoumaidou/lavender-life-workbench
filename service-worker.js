@@ -1,4 +1,4 @@
-const CACHE_NAME = "lavender-workbench-v2";
+const CACHE_NAME = "lavender-workbench-v3";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -6,6 +6,10 @@ const APP_SHELL = [
   "./pet.css",
   "./pet-core.js",
   "./pet-ui.js",
+  "./assets/pets/maine-coon.webp",
+  "./assets/pets/russian-blue.webp",
+  "./assets/pets/rough-collie.webp",
+  "./assets/pets/border-collie.webp",
   "./icon-192.png",
   "./icon-512.png"
 ];

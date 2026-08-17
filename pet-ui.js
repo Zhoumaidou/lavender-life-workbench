@@ -1,9 +1,14 @@
 (() => {
   const SPECIES = {
-    'british-shorthair': '缅英猫',
-    'blue-cat': '蓝猫',
-    'rough-collie': '苏牧',
-    'border-collie': '边牧'
+    'british-shorthair': { name: '缅因猫', image: './assets/pets/maine-coon.webp', source: 'https://commons.wikimedia.org/wiki/File:Maine_Coon_male_NO_Sigdalskauen_Balder.jpg' },
+    'blue-cat': { name: '俄罗斯蓝猫', image: './assets/pets/russian-blue.webp', source: 'https://commons.wikimedia.org/wiki/File:Russian_Blue_Cat_American_type.jpg' },
+    'rough-collie': { name: '苏牧', image: './assets/pets/rough-collie.webp', source: 'https://commons.wikimedia.org/wiki/File:1Dog-rough-collie-portrait.jpg' },
+    'border-collie': { name: '边牧', image: './assets/pets/border-collie.webp', source: 'https://commons.wikimedia.org/wiki/File:Border_Collie_600.jpg' }
+  };
+  const INTERACTIONS = {
+    head: { icon: '🫳', label: '摸头' },
+    belly: { icon: '🤲', label: '摸肚子' },
+    paw: { icon: '🐾', label: '握爪' }
   };
   const MESSAGES = {
     positive: ['主人今天好棒！✨', '继续加油，我们是最佳搭档！💪', '今天的工作状态满分！🌟', '主人专注的样子真帅！😎'],
@@ -26,13 +31,14 @@
 
   function petFace(pet) {
     const mood = petMood(pet);
+    const species = SPECIES[pet.species] || SPECIES['british-shorthair'];
     const decorations = pet.equipped.map(decoration).filter(Boolean);
-    return `<button class="pet-avatar species-${pet.species} mood-${mood.key} ${pet.level >= 50 ? 'is-glowing' : ''}" data-pet-click aria-label="和${SPECIES[pet.species]}互动，双击打开装扮">
+    return `<div class="pet-avatar species-${pet.species} mood-${mood.key} ${pet.level >= 50 ? 'is-glowing' : ''}" data-pet-click tabindex="0" role="group" aria-label="和${species.name}互动，双击打开装扮">
+      <span class="pet-photo-frame"><img class="pet-photo" src="${species.image}" alt="${species.name}"></span>
       <span class="pet-decorations" aria-hidden="true">${decorations.map(item => `<i>${item.emoji}</i>`).join('')}</span>
-      <span class="pet-ear pet-ear-left"></span><span class="pet-ear pet-ear-right"></span>
-      <span class="pet-head"><i class="pet-patch"></i><i class="pet-eye pet-eye-left"></i><i class="pet-eye pet-eye-right"></i><i class="pet-nose"></i><i class="pet-mouth"></i></span>
+      ${Object.entries(INTERACTIONS).map(([id, action]) => `<button class="pet-touch pet-touch-${id}" data-pet-action="${id}" aria-label="${action.label}" title="${action.label}"><span aria-hidden="true">${action.icon}</span></button>`).join('')}
       <span class="pet-tooltip" role="tooltip">饱食度 ${pet.hunger}　情绪 ${pet.mood}<br>等级 ${pet.level}　经验 ${pet.exp}/${PetCore.threshold(pet.level)}</span>
-    </button>`;
+    </div>`;
   }
 
   function petCard() {
@@ -47,7 +53,7 @@
       <div class="pet-card card" data-pet-drop>
         <div class="pet-stage"><div class="pet-speech" aria-live="polite"></div>${petFace(pet)}<span class="pet-drop-hint">把待办拖到这里喂我</span></div>
         <div class="pet-details">
-          <div class="pet-name-row"><div><strong>${SPECIES[pet.species]}</strong><span>${mood.label}</span></div><button class="text-btn pet-manage" data-pet-open>装扮</button></div>
+          <div class="pet-name-row"><div><strong>${(SPECIES[pet.species] || SPECIES['british-shorthair']).name}</strong><span>${mood.label}</span></div><button class="text-btn pet-manage" data-pet-open>装扮</button></div>
           <div class="pet-stat-grid">
             <span><small>饱食度</small><b>${pet.hunger}</b></span><span><small>情绪</small><b>${pet.mood}</b></span>
             <span><small>等级</small><b>Lv.${pet.level}</b></span><span><small>经验</small><b>${pet.level >= 100 ? 'MAX' : `${pet.exp}/${threshold}`}</b></span>
@@ -87,11 +93,26 @@
     bubbleTimer = setTimeout(() => bubble.classList.remove('is-visible'), 3200);
   }
 
-  function interact() {
+  function interactionMessage(action, pet) {
+    const isCat = pet.species === 'british-shorthair' || pet.species === 'blue-cat';
+    if (action === 'belly') return isCat ? '肚皮只给你摸一下哦！🐾' : '翻出肚皮，尾巴摇个不停！';
+    if (action === 'paw') return isCat ? '软软的小爪和你碰了一下~' : '握爪成功！今天也一起加油。';
+    return isCat ? '摸到耳朵边，满足地眯起眼睛~' : '摸摸头，开心地蹭了回来！';
+  }
+
+  function animatePet(action) {
+    const avatar = document.querySelector('.pet-avatar');
+    if (!avatar) return;
+    avatar.classList.add(`action-${action}`);
+    setTimeout(() => avatar.classList.remove(`action-${action}`), 900);
+  }
+
+  function interact(action = 'head') {
     const result = PetCore.petPet(data);
-    const message = messageFor(data.pet);
+    const message = interactionMessage(action, data.pet);
     save();
     render();
+    animatePet(action);
     showBubble(message);
     if (!result.rewarded) toast('今天已经摸过三次啦');
   }
@@ -136,7 +157,8 @@
     const pet = data.pet;
     modalRoot.innerHTML = `<div class="modal-wrap pet-modal-wrap"><section class="modal pet-modal" role="dialog" aria-modal="true" aria-labelledby="pet-manager-title">
       <div class="modal-head"><div><h2 id="pet-manager-title">宠物衣橱</h2><p>可同时穿戴 1-3 件装饰品</p></div><button class="icon-btn" data-close aria-label="关闭">×</button></div>
-      <div class="pet-species" aria-label="选择宠物形象">${Object.entries(SPECIES).map(([id, name]) => `<button class="${pet.species === id ? 'active' : ''}" data-pet-species="${id}"><span class="species-dot species-${id}"></span>${name}</button>`).join('')}</div>
+      <div class="pet-species" aria-label="选择宠物形象">${Object.entries(SPECIES).map(([id, species]) => `<button class="${pet.species === id ? 'active' : ''}" data-pet-species="${id}"><img class="species-thumb" src="${species.image}" alt="">${species.name}</button>`).join('')}</div>
+      <a class="pet-photo-credit" href="${(SPECIES[pet.species] || SPECIES['british-shorthair']).source}" target="_blank" rel="noopener">照片来源与授权</a>
       <div class="segmented pet-tabs"><button class="segment ${tab === 'wardrobe' ? 'active' : ''}" data-pet-tab="wardrobe">已拥有</button><button class="segment ${tab === 'store' ? 'active' : ''}" data-pet-tab="store">宠物商店</button><button class="segment ${tab === 'achievements' ? 'active' : ''}" data-pet-tab="achievements">成就</button></div>
       <div class="pet-manager-body">${managerItems()}</div>
     </section></div>`;
@@ -157,9 +179,11 @@
       if (task?.done) rewardTask(task);
       return;
     }
-    if (event.target.closest('[data-pet-click]')) {
+    const petTarget = event.target.closest('[data-pet-click]');
+    if (petTarget) {
+      const action = event.target.closest('[data-pet-action]')?.dataset.petAction || 'head';
       clearTimeout(petClickTimer);
-      petClickTimer = setTimeout(interact, 240);
+      petClickTimer = setTimeout(() => interact(action), 240);
       return;
     }
     const button = event.target.closest('button');
@@ -185,6 +209,12 @@
     if (!event.target.closest('[data-pet-click]')) return;
     clearTimeout(petClickTimer);
     openManager();
+  });
+
+  document.addEventListener('keydown', event => {
+    if (!event.target.matches('.pet-avatar') || !['Enter', ' '].includes(event.key)) return;
+    event.preventDefault();
+    interact('head');
   });
 
   document.addEventListener('dragstart', event => {
